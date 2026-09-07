@@ -1,42 +1,48 @@
-package entity;
+package com.library.usermanagementsystem.entity;
+
+import jakarta.persistence.*;
 
 import java.sql.Timestamp;
-import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
-// @Entity → báo cho JPA biết User là Entity
-// @Table(name = "users") → Entity này tương ứng với bảng users trong PostgreSQL
 
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // @Id → khóa chính
-    // @GeneratedValue(...) → ID được database tự tăng
-    // GenerationType.IDENTITY → phù hợp với BIGSERIAL/cơ chế identity của PostgreSQL
     private Long userId;
 
     @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "user_name")
+    @Column(name = "user_name", unique = true)
     private String userName;
 
-    @Column(name = "email")
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password")
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "role")
-    private String role;
+    @Column(nullable = false)
+    private String role = "USER";
 
     @Column(name = "created_at")
     private Timestamp createdAt;
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = new Timestamp(System.currentTimeMillis());
+    }
+
     @Column(name = "updated_at")
     private Timestamp updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = new Timestamp(System.currentTimeMillis());
+    }
 
     public User(){}
 
@@ -131,3 +137,4 @@ public class User {
     }
 
 }
+
