@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -50,8 +52,10 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<UserResponse> searchByFullName(@RequestParam String fullname){
+    public ResponseEntity<List<UserResponse>> searchByFullName(@RequestParam String fullname) {
+
         return ResponseEntity.ok(userService.searchByFullName(fullname));
+
     }
 
 }

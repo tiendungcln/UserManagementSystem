@@ -1,5 +1,6 @@
 package com.library.usermanagementsystem.service;
 
+import com.library.usermanagementsystem.dto.LoginRequest;
 import com.library.usermanagementsystem.dto.UserRequest;
 import com.library.usermanagementsystem.dto.UserResponse;
 import com.library.usermanagementsystem.entity.User;
@@ -9,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -119,22 +122,41 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public UserResponse searchByFullName(String userName){
+    public List<UserResponse> searchByFullName(String fullName) {
 
-        User user = userRepository.findByFullNameContainingIgnoreCase(userName).orElseThrow(() ->
-                new UserNotFoundException("User not found with username: " + userName));
+        List<User> users = userRepository.findByFullNameContainingIgnoreCase(fullName);
 
-        UserResponse response = new UserResponse();
+        if (users.isEmpty()) {
+            throw new UserNotFoundException("User not found with full name: " + fullName);
+        }
 
-        response.setUserId(user.getUserId());
-        response.setFullName(user.getFullName());
-        response.setUserName(user.getUserName());
-        response.setEmail(user.getEmail());
-        response.setRole(user.getRole());
-        response.setCreatedAt(user.getCreatedAt());
-        response.setUpdatedAt(user.getUpdatedAt());
+        return users.stream().map(user -> {
 
-        return response;
+            UserResponse response = new UserResponse();
+
+            response.setUserId(user.getUserId());
+            response.setFullName(user.getFullName());
+            response.setUserName(user.getUserName());
+            response.setEmail(user.getEmail());
+            response.setRole(user.getRole());
+            response.setCreatedAt(user.getCreatedAt());
+            response.setUpdatedAt(user.getUpdatedAt());
+
+            return response;
+
+        }).toList();
+
+    }
+
+    public boolean login(LoginRequest request){
+
+        User user = userRepository.findByUserName(request.getUserName()).orElse(null);
+
+        if (user == null){
+            return false;
+        }
+
+        return passwordEncoder.matches(request.getPassword(), user.getPassword());
 
     }
 

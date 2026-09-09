@@ -1,5 +1,6 @@
 package com.library.usermanagementsystem.exception;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +30,14 @@ public class GlobalExceptionHandler {
         }
 
         return new ErrorResponse(400, "Validation failed", errors);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ErrorResponse handleBadCredentials(BadCredentialsException ex) {
+        return new ErrorResponse(
+                401,
+                "Invalid username or password"
+        );
     }
 
 }
