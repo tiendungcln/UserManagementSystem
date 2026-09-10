@@ -48,6 +48,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
 
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/oauth2/success", true)
+                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(
                                 (request, response, authException) -> {
