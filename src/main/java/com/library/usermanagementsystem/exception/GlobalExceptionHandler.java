@@ -40,4 +40,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RefreshTokenException.class)
+    public ErrorResponse handleRefreshTokenException(
+            RefreshTokenException ex
+    ) {
+        return new ErrorResponse(401, ex.getMessage());
+    }
+
 }
