@@ -1,15 +1,11 @@
 package com.library.usermanagementsystem.controller;
 
-import com.library.usermanagementsystem.dto.LoginRequest;
-import com.library.usermanagementsystem.dto.LoginResponse;
-import com.library.usermanagementsystem.dto.RefreshTokenRequest;
-import com.library.usermanagementsystem.dto.RefreshTokenResponse;
+import com.library.usermanagementsystem.dto.*;
+import com.library.usermanagementsystem.entity.PasswordResetToken;
 import com.library.usermanagementsystem.entity.RefreshToken;
 import com.library.usermanagementsystem.entity.User;
 import com.library.usermanagementsystem.repository.UserRepository;
-import com.library.usermanagementsystem.service.EmailVerificationService;
-import com.library.usermanagementsystem.service.JwtService;
-import com.library.usermanagementsystem.service.RefreshTokenService;
+import com.library.usermanagementsystem.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,18 +21,24 @@ public class AuthController {
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     private final EmailVerificationService emailVerificationService;
+    private final PasswordResetService passwordResetService;
+    private final EmailService emailService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             UserRepository userRepository,
             RefreshTokenService refreshTokenService,
-            EmailVerificationService emailVerificationService) {
+            EmailVerificationService emailVerificationService,
+            PasswordResetService passwordResetService,
+            EmailService emailService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
         this.emailVerificationService = emailVerificationService;
+        this.passwordResetService = passwordResetService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/login")
@@ -118,6 +120,39 @@ public class AuthController {
         emailVerificationService.verifyEmail(token);
 
         return ResponseEntity.ok("Email verified successfully");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+
+        PasswordResetToken resetToken =
+                passwordResetService.createResetToken(
+                        request.getEmail()
+                );
+
+        emailService.sendPasswordResetEmail(
+                request.getEmail(),
+                resetToken.getToken()
+        );
+
+        return ResponseEntity.ok(
+                "Password reset email sent"
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @RequestBody ResetPasswordRequest request
+    ) {
+
+        passwordResetService.resetPassword(
+                request.getToken(),
+                request.getNewPassword()
+        );
+
+        return ResponseEntity.ok(
+                "Password reset successfully"
+        );
     }
 
 }

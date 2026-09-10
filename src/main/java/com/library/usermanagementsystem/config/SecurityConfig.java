@@ -31,7 +31,7 @@ public class SecurityConfig {
 
                         // Đăng ký + login
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/logout", "/auth/verify-email").permitAll()
+                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/logout", "/auth/verify-email", "/auth/forgot-password", "/auth/reset-password").permitAll()
 
                         // USER + ADMIN đều được GET
                         .requestMatchers(HttpMethod.GET, "/users/**")

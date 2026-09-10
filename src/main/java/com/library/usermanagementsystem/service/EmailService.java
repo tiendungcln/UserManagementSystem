@@ -30,4 +30,28 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    public void sendPasswordResetEmail(
+            String to,
+            String token
+    ) {
+
+        String resetLink =
+                "http://localhost:8080/auth/reset-password?token="
+                        + token;
+
+        SimpleMailMessage message =
+                new SimpleMailMessage();
+
+        message.setFrom("letiendungltw@gmail.com");
+        message.setTo(to);
+        message.setSubject("Reset your password");
+        message.setText(
+                "Please click the link below to reset your password:\n\n"
+                        + resetLink
+        );
+
+        mailSender.send(message);
+    }
+
 }
