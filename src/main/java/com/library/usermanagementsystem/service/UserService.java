@@ -3,6 +3,7 @@ package com.library.usermanagementsystem.service;
 import com.library.usermanagementsystem.dto.LoginRequest;
 import com.library.usermanagementsystem.dto.UserRequest;
 import com.library.usermanagementsystem.dto.UserResponse;
+import com.library.usermanagementsystem.entity.EmailVerificationToken;
 import com.library.usermanagementsystem.entity.User;
 import com.library.usermanagementsystem.exception.UserNotFoundException;
 import com.library.usermanagementsystem.repository.UserRepository;
@@ -19,10 +20,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            EmailVerificationService emailVerificationService,
+            EmailService emailService){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailVerificationService = emailVerificationService;
+        this.emailService = emailService;
     }
 
     public Page<UserResponse> getAllUsers(Pageable pageable){
@@ -73,6 +82,16 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         User savedUser = userRepository.save(user);
+
+        EmailVerificationToken verificationToken =
+                emailVerificationService.createVerificationToken(
+                        savedUser.getUserName()
+                );
+
+        emailService.sendVerificationEmail(
+                savedUser.getEmail(),
+                verificationToken.getToken()
+        );
 
         UserResponse response = new UserResponse();
 

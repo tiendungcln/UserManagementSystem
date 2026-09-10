@@ -1,6 +1,7 @@
 package com.library.usermanagementsystem.exception;
 
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +46,16 @@ public class GlobalExceptionHandler {
             RefreshTokenException ex
     ) {
         return new ErrorResponse(401, ex.getMessage());
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ErrorResponse handleDisabledException(
+            DisabledException ex
+    ) {
+        return new ErrorResponse(
+                403,
+                "Please verify your email before logging in"
+        );
     }
 
 }

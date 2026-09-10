@@ -63,14 +63,15 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
-    public String refreshAccessToken(String token) {
+    public RefreshToken refreshRefreshToken(String token) {
 
-        RefreshToken refreshToken = verifyRefreshToken(token);
+        RefreshToken oldRefreshToken = verifyRefreshToken(token);
 
-        return jwtService.generateToken(
-                refreshToken.getUserName(),
-                getUserRole(refreshToken.getUserName())
-        );
+        String userName = oldRefreshToken.getUserName();
+
+        refreshTokenRepository.delete(oldRefreshToken);
+
+        return createRefreshToken(userName);
     }
 
     private String getUserRole(String userName) {

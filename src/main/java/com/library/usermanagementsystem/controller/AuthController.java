@@ -3,9 +3,11 @@ package com.library.usermanagementsystem.controller;
 import com.library.usermanagementsystem.dto.LoginRequest;
 import com.library.usermanagementsystem.dto.LoginResponse;
 import com.library.usermanagementsystem.dto.RefreshTokenRequest;
+import com.library.usermanagementsystem.dto.RefreshTokenResponse;
 import com.library.usermanagementsystem.entity.RefreshToken;
 import com.library.usermanagementsystem.entity.User;
 import com.library.usermanagementsystem.repository.UserRepository;
+import com.library.usermanagementsystem.service.EmailVerificationService;
 import com.library.usermanagementsystem.service.JwtService;
 import com.library.usermanagementsystem.service.RefreshTokenService;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +24,19 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             UserRepository userRepository,
-            RefreshTokenService refreshTokenService) {
+            RefreshTokenService refreshTokenService,
+            EmailVerificationService emailVerificationService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @PostMapping("/login")
@@ -70,28 +75,49 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<String> refresh(
-            @RequestBody RefreshTokenRequest request
-    ) {
+    public ResponseEntity<RefreshTokenResponse> refresh(@RequestBody RefreshTokenRequest request) {
 
-        String newAccessToken =
-                refreshTokenService.refreshAccessToken(
+        RefreshToken newRefreshToken =
+                refreshTokenService.refreshRefreshToken(
                         request.getRefreshToken()
                 );
 
-        return ResponseEntity.ok(newAccessToken);
+        String newAccessToken =
+                jwtService.generateToken(
+                        newRefreshToken.getUserName(),
+                        userRepository
+                                .findByUserName(newRefreshToken.getUserName())
+                                .orElseThrow(() ->
+                                        new UsernameNotFoundException("User not found")
+                                )
+                                .getRole()
+                );
+
+        RefreshTokenResponse response =
+                new RefreshTokenResponse(
+                        newAccessToken,
+                        newRefreshToken.getToken()
+                );
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @RequestBody RefreshTokenRequest request
-    ) {
+    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
 
         refreshTokenService.deleteRefreshToken(
                 request.getRefreshToken()
         );
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+
+        emailVerificationService.verifyEmail(token);
+
+        return ResponseEntity.ok("Email verified successfully");
     }
 
 }

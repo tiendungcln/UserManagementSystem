@@ -23,6 +23,9 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    private boolean verified = false;
+
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -46,7 +49,7 @@ public class User {
 
     public User(){}
 
-    public User(Long userId, String fullName, String userName, String email, String password, String role, Timestamp createdAt, Timestamp updatedAt) {
+    public User(Long userId, String fullName, String userName, String email, String password, String role, Timestamp createdAt, Timestamp updatedAt, boolean verified) {
         this.userId = userId;
         this.fullName = fullName;
         this.userName = userName;
@@ -55,6 +58,7 @@ public class User {
         this.role = role;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.verified = verified;
     }
 
     public User(String fullName, String userName, String email, String password) {
@@ -64,12 +68,13 @@ public class User {
         this.password = password;
     }
 
-    public User(String fullName, String userName, String email, String password, String role) {
+    public User(String fullName, String userName, String email, String password, String role, boolean verified) {
         this.fullName = fullName;
         this.userName = userName;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.verified = verified;
     }
 
     public Long getUserId() {
@@ -136,5 +141,12 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
 }
 
