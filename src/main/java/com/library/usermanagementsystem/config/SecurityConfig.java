@@ -3,6 +3,7 @@ package com.library.usermanagementsystem.config;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,8 +28,25 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/users", "/auth/login").permitAll()
+
+                        // Đăng ký + login
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
+
+                        // USER + ADMIN đều được GET
+                        .requestMatchers(HttpMethod.GET, "/users/**")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // Chỉ ADMIN được sửa / xoá
+                        .requestMatchers(HttpMethod.PUT, "/users/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/users/**")
+                        .hasRole("ADMIN")
+
+                        // Còn lại bắt buộc đăng nhập
                         .anyRequest().authenticated()
+
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(
@@ -40,6 +58,13 @@ public class SecurityConfig {
                                     );
                                 }
                         )
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write(
+                                    "{\"status\":403,\"message\":\"Forbidden\"}"
+                            );
+                        })
                 )
                 .addFilterBefore(
                         jwtAuthenticationFilter,
